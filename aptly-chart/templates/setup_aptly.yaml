@@ -1,0 +1,64 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aptly-chart.fullname" . }}-initial-setup-job
+  labels:
+    {{- include "aptly-chart.labels" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "aptly-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image_aptly.repository }}:{{ .Values.image_aptly.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image_aptly.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/aptly_wrapper_config
+              name: config
+              readOnly: true
+            - mountPath: /opt/aptly
+              name: data
+            - mountPath: /root/.gnupg
+              name: gpg
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ include "aptly-chart.fullname" . }}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.data.existingClaim | default (include "aptly-chart.data_volume" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: gpg
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.gpg.existingClaim | default (include "aptly-chart.gpg_volume" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}

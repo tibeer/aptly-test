@@ -1,0 +1,36 @@
+#cloud-config
+runcmd:
+- mkdir -p /opt/aptly/public
+- apt-get update
+- apt-get install -y gnupg1 gpgv1 bzip2 xz-utils
+- wget -qO /root/aptly_1.5.0._amd64.deb https://github.com/aptly-dev/aptly/releases/download/v1.5.0/aptly_1.5.0_amd64.deb
+- dpkg -i /root/aptly_1.5.0._amd64.deb
+- rm /root/aptly_1.5.0._amd64.deb
+write_files:
+- content: |
+    {
+        "rootDir": "/opt/aptly",
+        "downloadConcurrency": 4,
+        "downloadSpeedLimit": 0,
+        "architectures": [
+            "amd64",
+            "arm64"
+        ],
+        "dependencyFollowSuggests": true,
+        "dependencyFollowRecommends": true,
+        "dependencyFollowAllVariants": false,
+        "dependencyFollowSource": false,
+        "dependencyVerboseResolve": false,
+        "gpgDisableSign": false,
+        "gpgDisableVerify": false,
+        "gpgProvider": "internal",
+        "downloadSourcePackages": false,
+        "skipLegacyPool": true,
+        "ppaDistributorID": "ubuntu",
+        "ppaCodename": "",
+        "skipContentsPublishing": false,
+        "FileSystemPublishEndpoints": {},
+        "S3PublishEndpoints": {},
+        "SwiftPublishEndpoints": {}
+    }
+  path: /etc/aptly.conf

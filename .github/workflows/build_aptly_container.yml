@@ -1,0 +1,37 @@
+---
+name: Build aptly container
+
+"on":
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'aptly-container/'
+      - '.github/workflows/build_aptly_container.yml'
+
+jobs:
+  build-aptly-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone current repository
+        uses: actions/checkout@v3
+
+      - name: Build using buildah
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ghcr.io/tibeer/aptly
+          tags: ghcr.io/tibeer/aptly:latest
+          context: ./aptly-container
+          containerfiles: |
+            ./aptly-container/Containerfile
+
+      - name: Push to ghcr.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}

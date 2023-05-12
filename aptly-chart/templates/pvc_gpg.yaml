@@ -1,0 +1,29 @@
+---
+{{- if and .Values.persistence.enabled (not .Values.persistence.gpg.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "aptly-chart.fullname" . }}-gpg
+  annotations:
+  {{- range $key, $value := .Values.persistence.gpg.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if eq .Values.persistence.resourcePolicy "keep" }}
+    helm.sh/resource-policy: keep
+  {{- end }}
+  labels:
+{{ include "aptly-chart.labels" . | indent 4 }}
+spec:
+  accessModes: 
+    - {{ .Values.persistence.gpg.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.gpg.size }}
+  {{- if .Values.persistence.gpg.storageClass }}
+    {{- if eq "-" .Values.persistence.gpg.storageClass }}
+  storageClassName: ""
+    {{- else }}
+  storageClassName: {{ .Values.persistence.gpg.storageClass }}
+    {{- end }}
+  {{- end }}
+{{- end }}
