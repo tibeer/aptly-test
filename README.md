@@ -1,6 +1,10 @@
 # aplty test
 
-IN DEVELOPMENT! DO NOT USE CURRENTLY!
+DEVELOPMENT FINISHED AND THEREFORE ARCHIVED.
+THE WORKING SOLUTION CAN BE FOUND IN:
+
+- https://github.com/osism/helm-charts
+- https://github.com/osism/container-images
 
 ```sh
 ssh ubuntu@213.131.230.228
